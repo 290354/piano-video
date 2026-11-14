@@ -1,0 +1,56 @@
+{
+  "title": "落叶",
+  "titleEn": "FALLING  LEAVES",
+  "key": "B",
+  "mode": "minor",
+  "bpm": 60,
+  "meter": [
+    4,
+    4
+  ],
+  "bars": 24,
+  "duration": 98.53,
+  "sizeMB": 26.9,
+  "date": "2026-11-14",
+  "engine": "v2",
+  "sections": [
+    {
+      "name": "A",
+      "bars": [
+        0,
+        8
+      ],
+      "pattern": "nocturne"
+    },
+    {
+      "name": "B",
+      "bars": [
+        8,
+        16
+      ],
+      "pattern": "arpeggio"
+    },
+    {
+      "name": "A'",
+      "bars": [
+        16,
+        20
+      ],
+      "pattern": "nocturne"
+    },
+    {
+      "name": "Coda",
+      "bars": [
+        20,
+        24
+      ],
+      "pattern": "block"
+    }
+  ],
+  "critic": {
+    "cand_a": 97.5,
+    "cand_b": 90.7,
+    "旧作_晨雾": 51.1,
+    "旧作_小圆舞": 71.9
+  }
+}

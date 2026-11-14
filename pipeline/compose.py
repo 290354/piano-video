@@ -179,6 +179,70 @@ if _ARGS.score:
 
 events.sort(key=lambda e: (e["beat"], e["midi"]))
 
+# ---------------------------------------------------------------- tempo map
+# A score may ask for tempo changes and a closing ritardando:
+#   "tempo": {"map": [[0, 66], [8, 72], [16, 62]], "rit": {"bar": 14, "factor": 0.78}}
+# Everything downstream works in seconds, so build beat -> second once.
+_TEMPO, _BPB = {}, 4.0
+if _ARGS.score:
+    try:
+        with open(_ARGS.score) as _f:
+            _SC_RAW = json.load(_f)
+        _TEMPO = _SC_RAW.get("tempo") or {}
+        _m = _SC_RAW.get("meter") or [4, 4]
+        _BPB = _m[0] * 4.0 / _m[1]
+    except Exception:
+        _TEMPO, _BPB = {}, 4.0
+
+_END_BEAT = max(e["beat"] + e["dur"] for e in events)
+_CTRL = [[0.0, BPM]]
+for bar, v in (_TEMPO.get("map") or []):
+    _CTRL.append([float(bar) * _BPB, float(v)])
+_CTRL.sort()
+_RIT = _TEMPO.get("rit") or {}
+
+
+def bpm_at(beat):
+    bpm = _CTRL[0][1]
+    for i in range(1, len(_CTRL)):
+        b0, v0 = _CTRL[i - 1]
+        b1, v1 = _CTRL[i]
+        if beat <= b1:
+            t = (beat - b0) / max(1e-9, b1 - b0)
+            bpm = v0 + (v1 - v0) * min(1.0, max(0.0, t))
+            break
+        bpm = v1
+    if _RIT:
+        r0 = float(_RIT.get("bar", 0)) * _BPB
+        r1 = float(_RIT.get("barTo", _END_BEAT / _BPB)) * _BPB
+        if beat > r0:
+            t = min(1.0, (beat - r0) / max(1e-9, r1 - r0))
+            bpm *= 1.0 + (float(_RIT.get("factor", 1.0)) - 1.0) * t
+    return max(20.0, bpm)
+
+
+_BT_CACHE = {}
+
+
+def bt(beat, _dt=0.01):
+    """integrate 60/bpm from 0 to `beat` — beat position to seconds"""
+    if beat <= 0:
+        return 0.0
+    key = round(beat, 4)
+    if key in _BT_CACHE:
+        return _BT_CACHE[key]
+    n = int(beat / _dt) + 1
+    acc = 0.0
+    prev = 0.0
+    for i in range(1, n + 1):
+        b = min(beat, i * _dt)
+        acc += (b - prev) * 60.0 / bpm_at(prev + (b - prev) * 0.5)
+        prev = b
+        if prev >= beat:
+            break
+    _BT_CACHE[key] = acc
+    return acc
+
 # ---------------------------------------------------------------- rendering
 def velocity_filter(cutoff):
     sos = butter(1, min(cutoff, SR / 2 * 0.92) / (SR / 2), btype="low", output="sos")
@@ -259,12 +323,12 @@ def main():
             tail = 0.6
     tail = max(0.4, min(tail, 12.0))
 
-    total = int((end_beat * BEAT + max(4.0, tail + 2.5)) * SR)
+    total = int((bt(end_beat) + max(4.0, tail + 2.5)) * SR)
     mix = np.zeros((total, 2), dtype=np.float32)
-    print(f"{len(events)} notes, {end_beat*BEAT:.1f}s + tail")
+    print(f"{len(events)} notes, {bt(end_beat):.1f}s + tail")
 
     for i, ev in enumerate(events):
-        start = int(ev["beat"] * BEAT * SR)
+        start = int(bt(ev["beat"]) * SR)
         y = render_note(ev)
         stop = min(total, start + len(y))
         if stop <= start:
@@ -286,14 +350,14 @@ def main():
     data = []
     for ev in events:
         data.append({
-            "t": round(ev["beat"] * BEAT, 4),
-            "d": round(ev["dur"] * BEAT, 4),
+            "t": round(bt(ev["beat"]), 4),
+            "d": round(bt(ev["beat"] + ev["dur"]) - bt(ev["beat"]), 4),
             "m": ev["midi"],
             "v": round(ev["vel"], 3),
             "p": ev["part"],
         })
     meta = {"bpm": BPM, "beat": BEAT, "duration": round(total / SR, 3),
-            "video": round(end_beat * BEAT + tail, 2),
+            "video": round(bt(end_beat) + tail, 2),
             "transpose": TRANSPOSE, "notes": data}
     with open(os.path.join(OUT, "notes.json"), "w") as f:
         json.dump(meta, f, separators=(",", ":"))

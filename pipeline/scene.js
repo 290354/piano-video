@@ -114,7 +114,9 @@
     ctx.save();
     ctx.globalAlpha = 0.38;
     ctx.filter = 'blur(7px)';
-    ctx.translate(0, KEY_Y + KH);
+    // mirror below the key bed: the key top must land at the far bottom, so the
+    // flipped image has to start one reflection-height *under* the keys
+    ctx.translate(0, KEY_Y + KH + KH * 0.62);
     ctx.scale(1, -0.62);
     ctx.drawImage(reflCanvas, 0, 0, W, KH, 0, 0, W, KH);
     ctx.restore();
@@ -421,6 +423,9 @@
     ctx.fillStyle = shade;
     ctx.fillRect(KX0 - 8, KEY_Y, KX1 - KX0 + 16, 34);
 
+    // glossy floor reflection
+    drawReflection();
+
     // front rail (key slip) under the keys
     const slipY = KEY_Y + WHITE_H;
     const slip = ctx.createLinearGradient(0, slipY, 0, slipY + 16);
@@ -432,8 +437,6 @@
     ctx.fillStyle = 'rgba(255,186,120,0.20)';
     ctx.fillRect(KX0 - 14, slipY, KX1 - KX0 + 28, 1.2);
 
-    // glossy floor reflection
-    drawReflection();
   }
 
   function drawHits(t) {
