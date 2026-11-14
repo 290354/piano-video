@@ -15,6 +15,9 @@
   const TITLE_EN = CFG.titleEn || 'NOCTURNE';
   const SUBTITLE = CFG.subtitle || 'A  MINOR   ·   72  BPM   ·   SOLO  PIANO';
   const END_WORD = CFG.endWord || '曲 终';
+  // where the coda starts: leave the last notes room to land before the card
+  const LAST_ON = NOTES.reduce((m, n) => Math.max(m, n.t), 0);
+  const END_START = Math.min(Math.max(DUR - 8.6, LAST_ON + 1.0), DUR - 4.4);
   const CREDIT1 = CFG.credit1 || '画面由代码逐帧绘制';
   const CREDIT2 = CFG.credit2 || '钢琴采样 · Salamander Grand Piano';
 
@@ -124,6 +127,19 @@
   }
 
   // ---------------------------------------------------------------- helpers
+  // a soft horizontal band behind typography: notes fade out under the words,
+  // so the type stays readable without looking like a pasted-on box
+  function textBand(yTop, yBot, k, peak) {
+    if (k <= 0.001) return;
+    const g = ctx.createLinearGradient(0, yTop, 0, yBot);
+    g.addColorStop(0, 'rgba(5,5,7,0)');
+    g.addColorStop(0.26, `rgba(5,5,7,${peak * k})`);
+    g.addColorStop(0.74, `rgba(5,5,7,${peak * k})`);
+    g.addColorStop(1, 'rgba(5,5,7,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, yTop, W, yBot - yTop);
+  }
+
   function roundRect(x, y, w, h, r) {
     const rr = Math.min(r, w / 2, h / 2);
     ctx.beginPath();
@@ -206,7 +222,10 @@
 
   function drawNotes(t) {
     const speed = (KEY_Y - TOP) / FALL;
+    // notes ease in while the title is up, so nothing cuts through the type
+    const intro = Math.min(1, Math.max(0, (t - 0.9) / 2.6));
     ctx.save();
+    ctx.globalAlpha = intro;
     for (const n of NOTES) {
       if (t < n.t - FALL || t > n.t + 3.0) continue;
       if (n.p === 'bass') continue;
@@ -474,6 +493,8 @@
 
     const y0 = 286 - (1 - ease((t - 0.55) / 1.9)) * 14;
 
+    textBand(y0 - 158, y0 + 214, a, 0.82);
+
     ctx.letterSpacing = '14px';
     ctx.font = '500 24px "Noto Serif Display", "Noto Serif", serif';
     ctx.fillStyle = 'rgba(214,188,152,0.82)';
@@ -501,23 +522,25 @@
   }
 
   function drawEndCard(t) {
-    const a = Math.min(ease((t - (DUR - 6.8)) / 2.0), 1 - ease((t - (DUR - 0.8)) / 0.9));
+    const a = Math.min(ease((t - END_START) / 1.9), 1 - ease((t - (DUR - 0.8)) / 0.9));
     if (a <= 0.001) return;
     ctx.save();
     ctx.globalAlpha = a;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
+    textBand(330, 600, a, 0.72);
+
     ctx.letterSpacing = '8px';
     ctx.font = '400 32px "Noto Serif CJK SC", "Noto Serif Display", serif';
     ctx.fillStyle = 'rgba(244,231,212,0.94)';
-    ctx.fillText(END_WORD, W / 2 + 4, 366);
+    ctx.fillText(END_WORD, W / 2 + 4, 424);
 
     ctx.letterSpacing = '6px';
     ctx.font = '400 17px "Noto Serif CJK SC", "Noto Serif", serif';
     ctx.fillStyle = 'rgba(206,186,160,0.80)';
-    ctx.fillText(CREDIT1, W / 2 + 3, 428);
-    ctx.fillText(CREDIT2, W / 2 + 3, 464);
+    ctx.fillText(CREDIT1, W / 2 + 3, 486);
+    ctx.fillText(CREDIT2, W / 2 + 3, 522);
 
     ctx.restore();
   }

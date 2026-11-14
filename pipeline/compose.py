@@ -247,7 +247,19 @@ def make_ir(seconds=3.0, decay=1.05, predelay=0.022):
 def main():
     load_samples()
     end_beat = max(e["beat"] + e["dur"] for e in events)
-    total = int((end_beat * BEAT + 4.0) * SR)
+
+    # how much silence to keep after the last note; external scores can ask for
+    # a longer ring-out (room for the end card) via {"tail": seconds}
+    tail = 0.6
+    if _ARGS.score:
+        try:
+            with open(_ARGS.score) as _f:
+                tail = float(json.load(_f).get("tail", 0.6))
+        except Exception:
+            tail = 0.6
+    tail = max(0.4, min(tail, 12.0))
+
+    total = int((end_beat * BEAT + max(4.0, tail + 2.5)) * SR)
     mix = np.zeros((total, 2), dtype=np.float32)
     print(f"{len(events)} notes, {end_beat*BEAT:.1f}s + tail")
 
@@ -281,7 +293,7 @@ def main():
             "p": ev["part"],
         })
     meta = {"bpm": BPM, "beat": BEAT, "duration": round(total / SR, 3),
-            "video": round(end_beat * BEAT + 0.6, 2),
+            "video": round(end_beat * BEAT + tail, 2),
             "transpose": TRANSPOSE, "notes": data}
     with open(os.path.join(OUT, "notes.json"), "w") as f:
         json.dump(meta, f, separators=(",", ":"))
