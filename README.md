@@ -98,3 +98,12 @@ out/                新产出放这里
 2. [changroro/code-video](https://github.com/changroro/code-video) 的 `code-video` —— 每一帧是时间的纯函数 `drawFrame(t)`；Canvas 画帧、无头 Chrome 截帧、ffmpeg 编码；先审静帧再渲全片。
 
 GitHub 拉整仓很慢，实际是读了两个仓库的 `SKILL.md`，按其方法自建管线，没有套用它们的模板代码。
+
+## 每日产出
+
+仓库里每天多一首，视频走 Release，乐谱与封面进 git。
+
+| 日期 | 曲名 | 调性 | 时长 | Release |
+| --- | --- | --- | --- | --- |
+| 2026-11-14 | 晨雾 | E 小调 · 66 BPM · 16 小节 | 64.2 s | [daily-20261114](https://github.com/290354/piano-video/releases/tag/daily-20261114) |
+
