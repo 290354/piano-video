@@ -122,4 +122,5 @@ GitHub 拉整仓很慢，实际是读了两个仓库的 `SKILL.md`，按其方�
 | --- | --- | --- | --- | --- |
 | 2026-11-14 | 晨雾 | E 小调 · 66 BPM · 16 小节 | 64.2 s | [daily-20261114](https://github.com/290354/piano-video/releases/tag/daily-20261114) |
 | 2026-11-21 | 灯河 | B 小调 · 68 BPM · 24 小节 | 97.5 s | [daily-20261121](https://github.com/290354/piano-video/releases/tag/daily-20261121) |
+| 2026-11-15 | 露水 | G 小调 · 64 BPM · 22 小节 | 93.8 s | [daily-20261115](https://github.com/290354/piano-video/releases/tag/daily-20261115) |
 

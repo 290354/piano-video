@@ -1,0 +1,52 @@
+{
+ "title": "露 水",
+ "titleEn": "DEW",
+ "key": "G",
+ "mode": "minor",
+ "bpm": 64,
+ "meter": [
+  4,
+  4
+ ],
+ "bars": 22,
+ "duration": 93.77,
+ "date": "2026-11-15",
+ "file": "daily.mp4",
+ "sizeMB": 25.3,
+ "critic": {
+  "c3.json": 93.6,
+  "c4.json": 89.4,
+  "c2.json": 84.8,
+  "c1.json": 79.3
+ },
+ "sections": [
+  {
+   "name": "A",
+   "bars": [
+    0,
+    8
+   ]
+  },
+  {
+   "name": "B",
+   "bars": [
+    8,
+    14
+   ]
+  },
+  {
+   "name": "A'",
+   "bars": [
+    14,
+    19
+   ]
+  },
+  {
+   "name": "Coda",
+   "bars": [
+    19,
+    22
+   ]
+  }
+ ]
+}
