@@ -1,0 +1,52 @@
+{
+ "title": "海 雾",
+ "titleEn": "SEA  FOG",
+ "key": "F#",
+ "mode": "minor",
+ "bpm": 72,
+ "meter": [
+  6,
+  8
+ ],
+ "bars": 24,
+ "duration": 69.08,
+ "date": "2026-11-18",
+ "file": "daily.mp4",
+ "sizeMB": 19.9,
+ "critic": {
+  "c2.json": 100.0,
+  "c3.json": 100.0,
+  "c1.json": 90.0,
+  "c4.json": 88.0
+ },
+ "sections": [
+  {
+   "name": "A",
+   "bars": [
+    0,
+    8
+   ]
+  },
+  {
+   "name": "B",
+   "bars": [
+    8,
+    14
+   ]
+  },
+  {
+   "name": "A'",
+   "bars": [
+    14,
+    20
+   ]
+  },
+  {
+   "name": "Coda",
+   "bars": [
+    20,
+    24
+   ]
+  }
+ ]
+}
