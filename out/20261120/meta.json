@@ -1,0 +1,52 @@
+{
+ "title": "归 鸟",
+ "titleEn": "HOMING  BIRDS",
+ "key": "D",
+ "mode": "minor",
+ "bpm": 68,
+ "meter": [
+  4,
+  4
+ ],
+ "bars": 24,
+ "duration": 95.72,
+ "date": "2026-11-20",
+ "file": "daily.mp4",
+ "sizeMB": 27.0,
+ "critic": {
+  "c1.json": 100.0,
+  "c3.json": 100.0,
+  "c4.json": 95.8,
+  "c2.json": 86.6
+ },
+ "sections": [
+  {
+   "name": "A",
+   "bars": [
+    0,
+    8
+   ]
+  },
+  {
+   "name": "B",
+   "bars": [
+    8,
+    15
+   ]
+  },
+  {
+   "name": "A'",
+   "bars": [
+    15,
+    20
+   ]
+  },
+  {
+   "name": "Coda",
+   "bars": [
+    20,
+    24
+   ]
+  }
+ ]
+}
