@@ -121,11 +121,11 @@ GitHub 拉整仓很慢，实际是读了两个仓库的 `SKILL.md`，按其方�
 | 日期 | 曲名 | 调性 | 时长 | Release |
 | --- | --- | --- | --- | --- |
 | 2026-11-14 | 晨雾 | E 小调 · 66 BPM · 16 小节 | 64.2 s | [daily-20261114](https://github.com/290354/piano-video/releases/tag/daily-20261114) |
-| 2026-11-21 | 灯河 | B 小调 · 68 BPM · 24 小节 | 97.5 s | [daily-20261121](https://github.com/290354/piano-video/releases/tag/daily-20261121) |
 | 2026-11-15 | 露水 | G 小调 · 64 BPM · 22 小节 | 93.8 s | [daily-20261115](https://github.com/290354/piano-video/releases/tag/daily-20261115) |
 | 2026-11-16 | 旧信 | A 小调 · 60 BPM · 23 小节 | 104.3 s | [daily-20261116](https://github.com/290354/piano-video/releases/tag/daily-20261116) |
 | 2026-11-17 | 窄巷 | C 小调 · 108 BPM · 23 小节 | 45.2 s | [daily-20261117](https://github.com/290354/piano-video/releases/tag/daily-20261117) |
 | 2026-11-18 | 海雾 | 升F 小调 · 72 BPM · 24 小节 | 69.1 s | [daily-20261118](https://github.com/290354/piano-video/releases/tag/daily-20261118) |
 | 2026-11-19 | 灯塔 | 降B 小调 · 58 BPM · 22 小节 | 103.6 s | [daily-20261119](https://github.com/290354/piano-video/releases/tag/daily-20261119) |
 | 2026-11-20 | 归鸟 | D 小调 · 68 BPM · 24 小节 | 95.7 s | [daily-20261120](https://github.com/290354/piano-video/releases/tag/daily-20261120) |
+| 2026-11-21 | 灯河 | B 小调 · 68 BPM · 24 小节 | 97.5 s | [daily-20261121](https://github.com/290354/piano-video/releases/tag/daily-20261121) |
 
