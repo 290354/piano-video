@@ -97,6 +97,8 @@ pipeline/
   assets/samples/   Salamander 采样（6.7 MB ogg）
   README.md         流水线细节
 out/                新产出放这里
+sheet/              每日乐谱（PDF / MSCZ / MusicXML）
+tools/              make_sheet.py，score.json → 五线谱
 ```
 
 ## 素材与授权
@@ -129,3 +131,4 @@ GitHub 拉整仓很慢，实际是读了两个仓库的 `SKILL.md`，按其方�
 | 2026-11-20 | 归鸟 | D 小调 · 68 BPM · 24 小节 | 95.7 s | [daily-20261120](https://github.com/290354/piano-video/releases/tag/daily-20261120) |
 | 2026-11-21 | 灯河 | B 小调 · 68 BPM · 24 小节 | 97.5 s | [daily-20261121](https://github.com/290354/piano-video/releases/tag/daily-20261121) |
 
+每首曲子的**双谱表乐谱**见 [`sheet/`](sheet/)：`.pdf` 直接看或打印，`.mscz` 用 MuseScore Studio 打开可编辑，`.musicxml` 可导入 Sibelius / Dorico / Logic。记谱与音轨同源，每个音都来自同一份 `score.json`。
