@@ -130,5 +130,31 @@ GitHub 拉整仓很慢，实际是读了两个仓库的 `SKILL.md`，按其方�
 | 2026-11-19 | 灯塔 | 降B 小调 · 58 BPM · 22 小节 | 103.6 s | [daily-20261119](https://github.com/290354/piano-video/releases/tag/daily-20261119) |
 | 2026-11-20 | 归鸟 | D 小调 · 68 BPM · 24 小节 | 95.7 s | [daily-20261120](https://github.com/290354/piano-video/releases/tag/daily-20261120) |
 | 2026-11-21 | 灯河 | B 小调 · 68 BPM · 24 小节 | 97.5 s | [daily-20261121](https://github.com/290354/piano-video/releases/tag/daily-20261121) |
+| 2026-11-21 | 铁轨 ↻ | D 多利亚 · 112 BPM · 24 小节 | 57.1 s | [rework-tracks](https://github.com/290354/piano-video/releases/tag/rework-tracks) |
+| 2026-11-21 | 三月的信 ↻ | F 小调 · 76 BPM · 26 小节 | 66.3 s | [rework-letter](https://github.com/290354/piano-video/releases/tag/rework-letter) |
+| 2026-11-21 | 铜与霜 ↻ | C 小调 · 63 BPM · 28 小节 | 113.7 s | [rework-brass](https://github.com/290354/piano-video/releases/tag/rework-brass) |
 
 每首曲子的**双谱表乐谱**见 [`sheet/`](sheet/)：`.pdf` 直接看或打印，`.mscz` 用 MuseScore Studio 打开可编辑，`.musicxml` 可导入 Sibelius / Dorico / Logic。记谱与音轨同源，每个音都来自同一份 `score.json`。
+
+### 2026-11-21 重写的三首（↻）
+
+上面八首被指出织体单一、动机平淡、和声保守。量化之后三条都成立，而且比描述更彻底：
+178 个和弦里七和弦 0 个，每一首的每一个低音都落在小节第 1 拍，动机只出现过原形。
+
+根因不在乐谱而在管线：
+
+- `score_loader.py` 的 `parse_chord` 只认三和弦与属七，`maj7 / 9 / sus4 / dim7 / b9` 全被静默降级；
+  低音是硬编码的「每小节第 1 拍、整小节时值」。
+- `critic.py` 的和声、织体、低音、节奏四项权重为 0，却把「级进率」设成 0.20 —— 它会给同质化的曲子打 82–100 分。
+- `scores/README.md` 的作曲约定第 2 条写「以级进为主，三四度跳进每两小节最多一次」，第 12 条写「动机移高一级」。
+
+三处都已改。三首新作各针对一条：
+
+| 曲 | 针对 | 做法 |
+| --- | --- | --- |
+| 铁轨 | 织体 | 4 种 pattern 轮换 5 段；低音走 D–C–B–A–G–A 级进线条，不在第 1 拍 |
+| 三月的信 | 动机 | 一个 4 音动机用原形/倒影/逆行/逆行倒影 4 种形态，出现 7 次 |
+| 铜与霜 | 和声 | 降 II、导减七、副属 V/iv、maj7#11；力度曲线 0.62→1.00→0.44 |
+
+`critic2` 得分 98.9 / 98.9 / 97.0；同一标准下旧八首是 34.8–50.7。
+新代码在提交 `cf8b17fe`，谱面在 `f866def4`。旧八首的音频与谱面没有改动，事件哈希逐位校验过。
