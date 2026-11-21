@@ -250,13 +250,28 @@ def velocity_filter(cutoff):
 
 def render_note(ev):
     midi, vel, dur = ev["midi"], ev["vel"], ev["dur"]
+    art = ev.get("art") or ""
+    # articulation shortens the key press, not the written value
+    sounding = dur
+    if art == "stacc":
+        sounding = dur * 0.45
+    elif art == "marc":
+        sounding = dur * 0.82
+    # damper pedal: the string keeps ringing until the pedal is lifted
+    pedalled = False
+    ped_end = ev.get("pedEnd")
+    if ped_end and ped_end > ev["beat"] + sounding + 1e-6:
+        sounding = ped_end - ev["beat"]
+        pedalled = True
+
     name = nearest_sample(midi)
     sr, x = SAMPLES[name]
     r = 2.0 ** ((midi - SAMPLE_FILES[name]) / 12.0)
     frac = Fraction(r).limit_denominator(400)
     y = resample_poly(x, frac.numerator, frac.denominator, axis=0).astype(np.float32)
 
-    total = int((dur + 2.2) * SR)
+    ring = 2.9 if pedalled else 2.0
+    total = int((sounding + ring) * SR)
     if len(y) < total:
         y = np.pad(y, ((0, total - len(y)), (0, 0)))
     else:
@@ -264,6 +279,10 @@ def render_note(ev):
 
     # velocity: level + brightness (soft playing is darker)
     gain = 0.16 + 0.84 * vel ** 1.7
+    if art == "acc":
+        gain *= 1.10
+    elif art == "marc":
+        gain *= 1.14
     y *= gain
     cutoff = 2200.0 + 13500.0 * (vel ** 1.15)
     if cutoff < SR / 2 * 0.92:
@@ -271,11 +290,11 @@ def render_note(ev):
         y = sosfilt(sos, y, axis=0).astype(np.float32)
 
     # damper: the key lifts, the string keeps ringing under the pedal
-    off = int(dur * SR)
+    off = int(sounding * SR)
     n = len(y)
     if off < n:
         t = np.arange(n - off) / SR
-        env = np.exp(-t / 0.85).astype(np.float32)
+        env = np.exp(-t / (2.4 if pedalled else 0.85)).astype(np.float32)
         y[off:] *= env[:, None]
 
     # short fade-in to avoid clicks on the softest notes
@@ -310,7 +329,8 @@ def make_ir(seconds=3.0, decay=1.05, predelay=0.022):
 
 def main():
     load_samples()
-    end_beat = max(e["beat"] + e["dur"] for e in events)
+    last_note = max(e["beat"] + e["dur"] for e in events)
+    end_beat = max(max(e["beat"] + e["dur"], e.get("pedEnd", 0.0)) for e in events)
 
     # how much silence to keep after the last note; external scores can ask for
     # a longer ring-out (room for the end card) via {"tail": seconds}
@@ -343,7 +363,7 @@ def main():
     # gentle bus glue + safety limiter
     out = np.tanh(out * 1.15) / 1.15
     peak = np.abs(out).max()
-    out *= 0.89 / peak
+    out *= 0.84 / peak
     wavfile.write(os.path.join(OUT, "piano_raw.wav"), SR, (out * 32767).astype(np.int16))
 
     # note data for the picture
@@ -357,7 +377,7 @@ def main():
             "p": ev["part"],
         })
     meta = {"bpm": BPM, "beat": BEAT, "duration": round(total / SR, 3),
-            "video": round(bt(end_beat) + tail, 2),
+            "video": round(bt(last_note) + tail, 2),
             "transpose": TRANSPOSE, "notes": data}
     with open(os.path.join(OUT, "notes.json"), "w") as f:
         json.dump(meta, f, separators=(",", ":"))

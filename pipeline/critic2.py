@@ -185,7 +185,8 @@ def score_piece(path, hist=None):
             pats = _texture_sig(json.load(f))
         nov = []
         for h in hist:
-            d_iv = _cos_dist(_hist(m["iv"]), h["iv"])
+            hiv = h["iv"] if isinstance(h["iv"], dict) else _hist(h["iv"])
+            d_iv = _cos_dist(_hist(m["iv"]), hiv)
             a, b = pats, h["pats"]
             jac = 1.0 - len(a & b) / max(1, len(a | b))
             nov.append(0.6 * d_iv + 0.4 * jac)
@@ -221,6 +222,8 @@ def main():
     hist = []
     if a.history:
         for p in sorted(glob.glob(os.path.join(a.history, "*.json"))):
+            if os.path.abspath(p) in {os.path.abspath(c) for c in a.candidates}:
+                continue                      # never score a piece against itself
             try:
                 mm = metrics(p)
                 if mm:

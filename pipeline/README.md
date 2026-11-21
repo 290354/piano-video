@@ -24,6 +24,7 @@ python3 make.py --bpm 64 --transpose -2 --scale 2 --out ../out/nocturne_4k.mp4
 | `compose.py` | 内置乐谱（21 小节 A 小调夜曲）+ 采样合成引擎 |
 | `score_loader.py` | 外部 `score.json` → 音符事件；和弦按音程表解析，含和弦音吸附、十种织体、`bassLine`、旋律变化音 |
 | `critic2.py` | 评审器 v2：动机变形、织体、低音、和声色彩、离调密度 |
+| `critic3.py` | 评审器 v3：段落过渡、再现变形、功能色彩与张力曲线、表情层密度 |
 | `scores/` | 乐谱格式说明与示例（`waltz.json`） |
 | `scene.js` | 画面，`drawFrame(t)` 是时间的纯函数 |
 | `render.py` | 无头 Chromium 逐帧截屏 → image2pipe → x264 |
@@ -51,13 +52,15 @@ python3 make.py --bpm 64 --transpose -2 --scale 2 --out ../out/nocturne_4k.mp4
 **音频**
 - 每个音符就近取采样，`resample_poly` 按音高比重采样；采样 44.1 kHz，混音 48 kHz，读入时先统一采样率（否则整体低约 1.5 个半音，已修）
 - 力度控制音量 `0.16 + 0.84·v^1.7` 与低通截止 `2200 + 13500·v^1.15`
-- 离键后按 `exp(-t/0.85)` 衰减（模拟踏板），4 ms 淡入防爆音
+- 离键后按 `exp(-t/0.85)` 衰减；`expression.pedal` 覆盖的音符延音到踏板抬起（`exp(-t/2.4)`），事件里带 `pedEnd`
+- `ten`/`stacc`/`acc`/`marc` 改变发声音长与增益（staccato 只发 45% 时值），不是只画记号
 - 声像：旋律 +0.10、伴奏 −0.08、高音装饰 +0.26
 - 卷积混响：3 s 指数衰减 IR + 4 个早反射，干湿 0.92 / 0.30
 
 **母带**
 - `highpass 32 Hz`、`260 Hz −1.6 dB`、`3.2 kHz +2.2 dB`
 - 结尾 3.6 s 淡出
+- 固定增益 + `alimiter 0.87`（−1.2 dBFS），**不用 loudnorm**：`LRA=9` 会把 link 段的弱奏压平，正好毁掉这一批的段落过渡
 - 两遍 loudnorm 到 −14 LUFS / TP −1.5，第二遍用 linear 模式
 
 **画面**

@@ -12,7 +12,12 @@ Score format (see scores/README.md):
     {"name": "B", "bars": [8, 16], "pattern": "arpeggio", "dynamic": 1.0}
   ],
   "chords": ["Am", "F", "C", "G", ...],  // one per bar
-  "melody": [[bar, beat, dur, degree, octave, velocity], ...]
+  "melody": [[bar, beat, dur, degree, octave, velocity, semitone, articulation], ...],
+  "expression": {                        // optional: the performance layer
+    "dyn":   [[bar, 0.55], [bar, 0.95]], // piecewise-linear velocity curve
+    "pedal": [[bar, beat, durBeats]],    // damper raised for that span
+    "marks": [{"bar":0,"beat":0,"type":"dyn","text":"p"}]  // score only
+  }
 }
 
 `degree` counts scale steps from the tonic (0 = tonic, 7 = tonic an octave up),
@@ -194,6 +199,21 @@ def _section_of(bar, sections):
     return {}
 
 
+def _curve(points, x, default=1.0):
+    """Piecewise-linear lookup over [(x, y), ...] sorted by x."""
+    if not points:
+        return default
+    if x <= points[0][0]:
+        return points[0][1]
+    for i in range(1, len(points)):
+        x0, y0 = points[i - 1]
+        x1, y1 = points[i]
+        if x <= x1:
+            t = (x - x0) / max(1e-9, x1 - x0)
+            return y0 + (y1 - y0) * t
+    return points[-1][1]
+
+
 def build(path, transpose=0):
     with open(path) as f:
         sc = json.load(f)
@@ -215,9 +235,39 @@ def build(path, transpose=0):
     events = []
     prev_v = None
 
-    def add(beat, dur, midi, vel, part):
-        events.append({"beat": float(beat), "dur": float(dur), "midi": int(midi) + transpose,
-                       "vel": float(min(1.0, max(0.05, vel))), "part": part})
+    # ---- performance layer ------------------------------------------------
+    # A written score says which notes; these say how they are played. The
+    # curve multiplies every velocity, the pedal spans keep the damper off so
+    # notes ring into each other (renderer reads pedEnd), and marks are passed
+    # through to the engraver untouched.
+    expr = sc.get("expression") or {}
+    dyn_pts = sorted((float(b) * bpb, float(v)) for b, v in (expr.get("dyn") or []))
+    pedal_spans = []
+    for it in expr.get("pedal") or []:
+        b, bt, du = (list(it) + [0, 0, 0])[:3]
+        s0 = float(b) * bpb + float(bt)
+        pedal_spans.append((s0, s0 + float(du)))
+    pedal_spans.sort()
+
+    def pedal_end(beat):
+        """End of the pedal span covering `beat`; spans never overlap."""
+        for s0, e0 in pedal_spans:
+            if s0 > beat:
+                break
+            if s0 <= beat < e0:
+                return e0
+        return None
+
+    def add(beat, dur, midi, vel, part, art=""):
+        d = _curve(dyn_pts, beat, 1.0)
+        ev = {"beat": float(beat), "dur": float(dur), "midi": int(midi) + transpose,
+              "vel": float(min(1.0, max(0.05, vel * d))), "part": part}
+        if art:
+            ev["art"] = art
+        pe = pedal_end(beat)
+        if pe is not None and pe > beat + 1e-6:
+            ev["pedEnd"] = pe
+        events.append(ev)
 
     for bar, name in enumerate(chords):
         sec = _section_of(bar, sections)
@@ -235,7 +285,7 @@ def build(path, transpose=0):
 
             if pattern == "pulse":                  # quarter-note chordal drive
                 for k in range(int(round(bpb))):
-                    add(base + k, 0.9, bn, (0.42 if k == 0 else 0.32) * amp, "bass")
+                    add(base + k, 0.9, bn, (0.42 if k == 0 else 0.32) * amp, "bass", "marc" if k == 0 else "")
                     for i, ci in enumerate((0, 1, 2)):
                         w = (0.25 + 0.035 * i) * (1.08 if k == 0 else 1.0)
                         add(base + k, 0.86, _tone(u, ci), w * amp, "harmony")
@@ -246,18 +296,18 @@ def build(path, transpose=0):
                 for i, ci in enumerate(shape):
                     acc = 0.07 if i in (0, 3) else 0.0
                     add(base + i * step, step * 0.92, _tone(u, ci), (0.29 + acc) * amp, "harmony")
-                add(base, step * 1.7, bn, 0.45 * amp, "bass")
-                add(base + bpb * 0.625, step * 1.5, bn + 7, 0.26 * amp, "bass")
+                add(base, step * 1.7, bn, 0.45 * amp, "bass", "ten")
+                add(base + bpb * 0.625, step * 1.5, bn + 7, 0.26 * amp, "bass", "ten")
 
             elif pattern == "counter":              # two-part left hand
-                add(base, 1.9, bn, 0.44 * amp, "bass")
+                add(base, 1.9, bn, 0.44 * amp, "bass", "ten")
                 alt = u[0] - 12 if u[0] - 12 > 33 else u[0]
-                add(base + 2.0, 1.9, alt, 0.36 * amp, "bass")
+                add(base + 2.0, 1.9, alt, 0.36 * amp, "bass", "ten")
                 for k, ci in ((1.5, 1), (3.5, 2)):  # tenor answers off the beat
                     add(base + k, 0.45, _tone(u, ci), 0.24 * amp, "harmony")
 
             elif pattern == "drone":                # held root, sparse colour
-                add(base, bpb - 0.02, bn, 0.34 * amp, "bass")
+                add(base, bpb - 0.02, bn, 0.34 * amp, "bass", "ten")
                 add(base, bpb - 0.02, bn + 7, 0.19 * amp, "harmony")
                 if bar % 2 == 0:
                     add(base + bpb * 0.75, 1.4, _tone(u, 0), 0.22 * amp, "harmony")
@@ -269,14 +319,14 @@ def build(path, transpose=0):
                 for i, ci in enumerate(shape):
                     w = 0.30 + (0.03 if i % 2 else 0.0)
                     add(base + i * step, step * 0.9, _tone(u, ci), w * amp, "harmony")
-                add(base + 0.5, 1.4, bn, 0.42 * amp, "bass")
+                add(base + 0.5, 1.4, bn, 0.42 * amp, "bass", "ten")
                 add(base + bpb * 0.6875, 1.0, bn, 0.28 * amp, "bass")
 
             elif pattern == "waltz2":               # the waltz with its weight reversed
                 for ci in (0, 1, 2):
                     add(base, 0.85, _tone(u, ci), (0.30 + 0.02 * ci) * amp, "harmony")
                     add(base + 1, 0.85, _tone(u, ci), 0.26 * amp, "harmony")
-                add(base + 2, 0.95, bn, 0.40 * amp, "bass")
+                add(base + 2, 0.95, bn, 0.40 * amp, "bass", "marc")
 
             else:
                 raise ValueError(f"unknown pattern {pattern}")
@@ -314,13 +364,14 @@ def build(path, transpose=0):
         item = list(item)
         bar, beat, dur, deg, octv, vel = (item + [0, 0, 1, 0, 0, 0.75])[:6]
         acc = int(item[6]) if len(item) > 6 else 0     # semitone inflection
+        art = str(item[7]) if len(item) > 7 else ""    # stacc | ten | acc | marc
         bar, deg, octv = int(bar), int(deg), int(octv)
         sec = _section_of(bar, sections)
-        dyn = float(sec.get("dynamic", 1.0))
+        sdyn = float(sec.get("dynamic", 1.0))
         midi = 12 * (octv + 5) + root_pc + scale[deg % 7] + 12 * (deg // 7) + acc
         if acc == 0 and abs(float(beat) - round(float(beat))) < 1e-6:
             midi = snap(midi, parse_chord(chords[bar % len(chords)]))
-        add(bar * bpb + float(beat), float(dur), midi, float(vel) * vs * dyn, "melody")
+        add(bar * bpb + float(beat), float(dur), midi, float(vel) * vs * sdyn, "melody", art)
 
     # optional octave doubling; off by default so the written register is what
     # you hear (and what the keyboard shows)

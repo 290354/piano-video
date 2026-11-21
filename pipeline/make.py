@@ -70,31 +70,22 @@ def compose(build, bpm, transpose, score=None):
     return meta
 
 
-def master(raw, out, dur):
-    """EQ + fade, then two-pass loudnorm to -14 LUFS."""
+def master(raw, out, dur, gain_db=0.0):
+    """EQ + fade + fixed gain.
+
+    loudnorm used to compress LRA to 9 LU, which flattened exactly the
+    pianissimo link sections this batch is built around; a fixed gain keeps
+    the written dynamics intact and a limiter guards the true peak.
+    """
     af = ("highpass=f=32,"
           "equalizer=f=260:t=q:w=1:g=-1.6,"
           "equalizer=f=3200:t=q:w=0.8:g=2.2,"
-          f"afade=t=out:st={max(0.0, dur - 3.8):.2f}:d=3.6")
+          f"afade=t=out:st={max(0.0, dur - 3.8):.2f}:d=3.6,"
+          f"volume={gain_db:.2f}dB,alimiter=limit=0.87:level=false")
     ff = ffmpeg_exe()
-    p = subprocess.run([ff, "-hide_banner", "-nostats", "-i", raw, "-t", f"{dur:.2f}",
-                        "-af", af + ",loudnorm=I=-14:TP=-1.5:LRA=9:print_format=json",
-                        "-f", "null", "-"], capture_output=True, text=True)
-    m = re.findall(r'\{[^{}]*"input_i"[^{}]*\}', p.stderr, re.S)
-    vals = {}
-    if m:
-        try:
-            vals = json.loads(m[-1])
-        except Exception:
-            vals = {}
-    af2 = af + ",loudnorm=I=-14:TP=-1.5:LRA=9"
-    if vals.get("input_i"):
-        af2 += (f":measured_I={vals['input_i']}:measured_TP={vals['input_tp']}"
-                f":measured_LRA={vals['input_lra']}:measured_thresh={vals['input_thresh']}"
-                f":offset={vals.get('target_offset', 0)}:linear=true")
     subprocess.run([ff, "-y", "-hide_banner", "-loglevel", "error", "-i", raw,
-                    "-t", f"{dur:.2f}", "-af", af2, "-ar", "48000", "-ac", "2", out], check=True)
-    log("mastered to -14 LUFS")
+                    "-t", f"{dur:.2f}", "-af", af, "-ar", "48000", "-ac", "2", out], check=True)
+    log(f"mastered at {gain_db:+.1f} dB")
 
 
 def write_config(build, cfg):
@@ -120,6 +111,7 @@ def main():
     ap.add_argument("--workdir", default=None)
     ap.add_argument("--preview", type=float, default=0)
     ap.add_argument("--no-cover", action="store_true")
+    ap.add_argument("--gain", type=float, default=0.0, help="dB, applied after EQ/fade")
     a = ap.parse_args()
 
     out = os.path.abspath(a.out)
@@ -141,7 +133,7 @@ def main():
 
     raw = os.path.join(build, "piano_raw.wav")
     audio = os.path.join(build, "piano_master.wav")
-    master(raw, audio, dur)
+    master(raw, audio, dur, a.gain)
 
     transpose = a.transpose
     NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
