@@ -22,7 +22,8 @@ python3 make.py --bpm 64 --transpose -2 --scale 2 --out ../out/nocturne_4k.mp4
 | --- | --- |
 | `make.py` | 总入口：采样准备、作曲、母带、写配置、渲染、封面 |
 | `compose.py` | 内置乐谱（21 小节 A 小调夜曲）+ 采样合成引擎 |
-| `score_loader.py` | 外部 `score.json` → 音符事件，含和弦音吸附 |
+| `score_loader.py` | 外部 `score.json` → 音符事件；和弦按音程表解析，含和弦音吸附、十种织体、`bassLine`、旋律变化音 |
+| `critic2.py` | 评审器 v2：动机变形、织体、低音、和声色彩、离调密度 |
 | `scores/` | 乐谱格式说明与示例（`waltz.json`） |
 | `scene.js` | 画面，`drawFrame(t)` 是时间的纯函数 |
 | `render.py` | 无头 Chromium 逐帧截屏 → image2pipe → x264 |
@@ -42,7 +43,7 @@ python3 make.py --bpm 64 --transpose -2 --scale 2 --out ../out/nocturne_4k.mp4
 }
 ```
 
-旋律六元组是 `[小节, 拍, 时值, 音级, 八度, 力度]`；音级指音阶级数而非半音。整数拍上不协和的音会自动吸附到当前小节的和弦音。左手由 `pattern` 生成（`nocturne` / `waltz` / `block` / `arpeggio`）。曲名、调性、BPM、键盘音域都会跟随 score。
+旋律六元组是 `[小节, 拍, 时值, 音级, 八度, 力度]`，可选第 7 位是半音偏移；音级指音阶级数而非半音。整数拍上不协和的音会自动吸附到当前小节的和弦音。左手由 `pattern` 生成：`nocturne` / `waltz` / `block` / `arpeggio`，以及后加的 `pulse` / `ostinato` / `counter` / `drone` / `broken` / `waltz2`——后六种的低音不在第 1 拍，是打破「每首听起来都一样」的关键。和弦支持七/九/挂留/变化音与转位。曲名、调性、BPM、键盘音域都会跟随 score。
 
 
 ## 流程细节

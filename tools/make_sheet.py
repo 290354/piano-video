@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(ROOT, "pipeline"))
 import score_loader as SL
 
 DIV = 24                     # divisions per quarter note (exact sixths & triplets)
+GRID = 3                     # smallest value the note table can spell (32nd)
 PC = {"C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11}
 SHARP_SPELL = {0: ("C", 0), 1: ("C", 1), 2: ("D", 0), 3: ("D", 1), 4: ("E", 0),
                5: ("F", 0), 6: ("F", 1), 7: ("G", 0), 8: ("G", 1), 9: ("A", 0),
@@ -47,11 +48,19 @@ def esc(s):
             .replace('"', "&quot;"))
 
 
+DORIAN_STEPS = [0, 2, 3, 5, 7, 9, 10]      # minor third, major sixth
+
+
 def spelling_table(key, mode):
     """pc -> (step, alter) following the key signature, including chromatic notes."""
-    fifths = (MINOR_FIFTHS if mode == "minor" else MAJOR_FIFTHS)[key]
+    if mode == "dorian":
+        fifths = MAJOR_FIFTHS[key] - 2       # D dorian shares C major's signature
+        steps = DORIAN_STEPS
+    elif mode == "minor":
+        fifths, steps = MINOR_FIFTHS[key], MINOR_STEPS
+    else:
+        fifths, steps = MAJOR_FIFTHS[key], MAJOR_STEPS
     root_pc = PC[key[0]]
-    steps = MINOR_STEPS if mode == "minor" else MAJOR_STEPS
     tonic_letter = LETTERS.index(key[0])
     table = {}
     for i in range(7):
@@ -61,7 +70,7 @@ def spelling_table(key, mode):
         if alter > 6:
             alter -= 12
         table[target] = (letter, alter)
-    fallback = FLAT_SPELL if fifths < 0 else SHARP_SPELL
+    fallback = FLAT_SPELL if fifths <= 0 else SHARP_SPELL   # no sharps in the signature -> flats read better
     for pc in range(12):
         if pc not in table:
             table[pc] = fallback[pc]
@@ -77,7 +86,11 @@ def pitch_xml(midi, table):
 
 
 def split_units(total):
-    """Decompose a duration into notatable values (largest first)."""
+    """Decompose a duration into notatable values (largest first).
+
+    Anything that survives the table is emitted as one block rather than
+    dropped: a lost unit here shifts every following note in the bar.
+    """
     out, left = [], total
     while left > 0:
         for u, _, _, _ in NOTE_UNITS:
@@ -86,8 +99,14 @@ def split_units(total):
                 left -= u
                 break
         else:
-            break
-    return out or [1]
+            out.append(left)
+            left = 0
+    return out or [GRID]
+
+
+def qgrid(u):
+    """Snap to the notation grid so durations always sum to the bar length."""
+    return int(round(u / GRID)) * GRID
 
 
 def type_xml(units):
@@ -112,17 +131,18 @@ def serialize(voice, staff, start_u, dur_u, pitches, tie_in=False, tie_out=False
             if j > 0:
                 head.append("<chord/>")
             head.append(f"<pitch>{pitch_xml(midi, table)}</pitch>")
+            # tie_s means "continued from the previous note": that is a stop
             if tie_s:
-                head.append('<tie type="start"/>')
-            if tie_e:
                 head.append('<tie type="stop"/>')
+            if tie_e:
+                head.append('<tie type="start"/>')
             head.append(f"<duration>{cu}</duration>")
             head.append(f"<voice>{voice}</voice>")
             head.append(type_xml(cu))
             head.append(f"<staff>{staff}</staff>")
             if tie_s or tie_e:
-                nt = ('<tied type="stop"/>' if tie_e else "") + \
-                     ('<tied type="start"/>' if tie_s else "")
+                nt = ('<tied type="stop"/>' if tie_s else "") + \
+                     ('<tied type="start"/>' if tie_e else "")
                 head.append(f"<notations>{nt}</notations>")
             head.append("</note>")
             nodes.append("".join(head))
@@ -151,6 +171,8 @@ def build_xml(score_path):
     nbars = len(sc["chords"])
     bar_u = int(round(bpb * DIV))
     fifths, table = spelling_table(sc["key"], sc.get("mode", "minor"))
+    # MusicXML has no <mode>dorian</mode>; the signature already carries it
+    xml_mode = "minor" if sc.get("mode", "minor") in ("minor", "harmonic_minor", "dorian") else "major"
     sections = sc.get("sections") or []
 
     voices = {1: [], 2: [], 3: []}
@@ -168,16 +190,16 @@ def build_xml(score_path):
     for v, lst in voices.items():
         groups = {}
         for e in lst:
-            s = int(round(e["beat"] * DIV))
+            s = qgrid(e["beat"] * DIV)
             groups.setdefault(s, []).append(e)
         seq = []
         for s in sorted(groups):
             g = groups[s]
-            dur = int(round(max(x["dur"] for x in g) * DIV))
-            seq.append({"start": s, "dur": max(1, dur),
+            dur = qgrid(max(x["dur"] for x in g) * DIV)
+            seq.append({"start": s, "dur": max(GRID, dur),
                         "pitches": sorted({int(x["midi"]) for x in g})})
         for i in range(len(seq) - 1):
-            seq[i]["dur"] = min(seq[i]["dur"], max(1, seq[i + 1]["start"] - seq[i]["start"]))
+            seq[i]["dur"] = min(seq[i]["dur"], max(GRID, qgrid(seq[i + 1]["start"] - seq[i]["start"])))
         parsed[v] = seq
 
     # split every note at bar lines
@@ -207,15 +229,18 @@ def build_xml(score_path):
             notes.sort(key=lambda x: x["u"])
             for i in range(len(notes) - 1):
                 gap = notes[i + 1]["u"] - (notes[i]["u"] + notes[i]["dur"])
-                if 0 < gap <= 2 and not notes[i]["tout"]:
+                if 0 < gap <= GRID and not notes[i]["tout"]:
                     notes[i]["dur"] += gap
             if notes:
                 gap = bar_u - (notes[-1]["u"] + notes[-1]["dur"])
-                if 0 < gap <= 2 and not notes[-1]["tout"]:
+                if 0 < gap <= GRID and not notes[-1]["tout"]:
                     notes[-1]["dur"] += gap
 
     pat = sc.get("pattern", "nocturne")
-    max_per = 4 if meter == [6, 8] else (5 if pat in ("arpeggio", "block") else 6)
+    if meter == [6, 8] or pat == "block":
+        max_per = 4
+    else:
+        max_per = 5
     systems = (nbars + max_per - 1) // max_per
     base, rem = divmod(nbars, systems)
     sizes = [base + (1 if i < rem else 0) for i in range(systems)]
@@ -224,6 +249,19 @@ def build_xml(score_path):
         acc += sz
         breaks.append(acc)
     sys_dist = max(120, min(260, int(1040 / max(1, systems))))
+    for bar, vd in per_bar.items():
+        for v, notes in vd.items():
+            for n in notes:
+                if n["tout"]:
+                    nxt = sorted(vd.get(bar + 1, {}).get(v, []), key=lambda x: x["u"])
+                    if not (nxt and nxt[0]["u"] == 0 and nxt[0]["p"] == n["p"]):
+                        n["tout"] = False
+                if n["tin"]:
+                    prv = sorted(vd.get(bar - 1, {}).get(v, []), key=lambda x: x["u"])
+                    if not (prv and prv[-1]["u"] + prv[-1]["dur"] == bar_u
+                            and prv[-1]["p"] == n["p"]):
+                        n["tin"] = False
+
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" '
            '"http://www.musicxml.org/dtds/partwise.dtd">',
@@ -242,7 +280,7 @@ def build_xml(score_path):
            "<midi-program>1</midi-program><volume>78</volume>"
            "</midi-instrument></score-part></part-list>",
            "<defaults>"
-           "<scaling><millimeters>5.2</millimeters><tenths>40</tenths></scaling>"
+           "<scaling><millimeters>4.2</millimeters><tenths>40</tenths></scaling>"
            "<page-layout><page-height>1683</page-height><page-width>1190</page-width>"
            '<page-margins type="both"><left-margin>52</left-margin><right-margin>52</right-margin>'
            "<top-margin>48</top-margin><bottom-margin>48</bottom-margin></page-margins>"
@@ -270,7 +308,7 @@ def build_xml(score_path):
         if bar == 0:
             out.append("<attributes>"
                        f"<divisions>{DIV}</divisions>"
-                       f"<key><fifths>{fifths}</fifths><mode>{sc.get('mode', 'minor')}</mode></key>"
+                       f"<key><fifths>{fifths}</fifths><mode>{xml_mode}</mode></key>"
                        f"<time><beats>{meter[0]}</beats><beat-type>{meter[1]}</beat-type></time>"
                        "<staves>2</staves>"
                        '<clef number="1"><sign>G</sign><line>2</line></clef>'
