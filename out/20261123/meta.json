@@ -1,0 +1,160 @@
+{
+ "title": "雨 檐",
+ "titleEn": "UNDER THE EAVES",
+ "key": "G",
+ "mode": "minor",
+ "bpm": 82,
+ "bars": 32,
+ "duration": 81.7,
+ "sizeMB": 23.7,
+ "date": "2026-11-23",
+ "critic": {
+  "动机辨识": {
+   "cand1": 1.0,
+   "cand2": 0.5,
+   "cand3": 1.0,
+   "cand4": 0.5
+  },
+  "动机变形": {
+   "cand1": 1.0,
+   "cand2": 1.0,
+   "cand3": 1.0,
+   "cand4": 1.0
+  },
+  "音程多样": {
+   "cand1": 1.0,
+   "cand2": 1.0,
+   "cand3": 1.0,
+   "cand4": 1.0
+  },
+  "音域": {
+   "cand1": 1.0,
+   "cand2": 1.0,
+   "cand3": 1.0,
+   "cand4": 1.0
+  },
+  "力度层次": {
+   "cand1": 1.0,
+   "cand2": 1.0,
+   "cand3": 1.0,
+   "cand4": 1.0
+  },
+  "织体变化": {
+   "cand1": 1.0,
+   "cand2": 1.0,
+   "cand3": 1.0,
+   "cand4": 1.0
+  },
+  "低音独立": {
+   "cand1": 0.5,
+   "cand2": 1.0,
+   "cand3": 1.0,
+   "cand4": 0.5
+  },
+  "和声色彩": {
+   "cand1": 0.9,
+   "cand2": 0.9,
+   "cand3": 0.96,
+   "cand4": 0.9
+  },
+  "离调密度": {
+   "cand1": 1.0,
+   "cand2": 1.0,
+   "cand3": 1.0,
+   "cand4": 1.0
+  },
+  "密度对比": {
+   "cand1": 1.0,
+   "cand2": 1.0,
+   "cand3": 1.0,
+   "cand4": 1.0
+  },
+  "终止式": {
+   "cand1": 1.0,
+   "cand2": 1.0,
+   "cand3": 1.0,
+   "cand4": 1.0
+  },
+  "新颖度": {
+   "cand1": 0.0,
+   "cand2": 0.0,
+   "cand3": 0.0,
+   "cand4": 0.0
+  }
+ },
+ "critic3": {
+  "bridge": 74,
+  "develop": 100,
+  "tension": 100,
+  "expr": 92,
+  "total": 90.6
+ },
+ "expression": {
+  "marks_per_bar": 0.66,
+  "pedal_per_bar": 1.0,
+  "articulated_ratio": 1.0
+ },
+ "sections": [
+  {
+   "name": "Intro",
+   "bars": [
+    0,
+    2
+   ]
+  },
+  {
+   "name": "A",
+   "bars": [
+    2,
+    10
+   ]
+  },
+  {
+   "name": "L1",
+   "bars": [
+    10,
+    12
+   ]
+  },
+  {
+   "name": "B",
+   "bars": [
+    12,
+    20
+   ]
+  },
+  {
+   "name": "L2",
+   "bars": [
+    20,
+    21
+   ]
+  },
+  {
+   "name": "A'",
+   "bars": [
+    21,
+    29
+   ]
+  },
+  {
+   "name": "Coda",
+   "bars": [
+    29,
+    32
+   ]
+  }
+ ],
+ "patterns": [
+  "block",
+  "broken",
+  "counter",
+  "drone",
+  "waltz2"
+ ],
+ "sheet": [
+  "daily.musicxml",
+  "daily.pdf",
+  "daily.mscz"
+ ]
+}
