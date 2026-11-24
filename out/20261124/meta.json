@@ -1,0 +1,113 @@
+{
+ "title": "霜 阶",
+ "titleEn": "FROST STAIRS",
+ "key": "F#",
+ "mode": "minor",
+ "bpm": 84,
+ "bars": 32,
+ "duration": 87.56,
+ "sizeMB": 23.86,
+ "date": "20261124",
+ "critic": {
+  "动机辨识": 1.0,
+  "动机变形": 1.0,
+  "音程多样": 1.0,
+  "音域": 1.0,
+  "力度层次": 1.0,
+  "织体变化": 1.0,
+  "低音独立": 1.0,
+  "和声色彩": 0.96,
+  "离调密度": 1.0,
+  "密度对比": 1.0,
+  "终止式": 1.0,
+  "新颖度": 0.0,
+  "总分": 95.6
+ },
+ "critic3": {
+  "bridge": 74.2,
+  "develop": 100.0,
+  "tension": 99.7,
+  "expression": 100.0,
+  "total": 92.2
+ },
+ "candidate_ranking": {
+  "cand3": 93.5,
+  "cand4": 91.45,
+  "cand1": 90.9,
+  "cand2": 89.05
+ },
+ "winner": "cand3",
+ "expression": {
+  "marks_per_bar": 0.906,
+  "pedal_per_bar": 1.0,
+  "articulated_ratio": 1.0
+ },
+ "sections": [
+  {
+   "name": "Intro",
+   "start": 0,
+   "end": 2
+  },
+  {
+   "name": "A",
+   "start": 2,
+   "end": 10
+  },
+  {
+   "name": "L1",
+   "start": 10,
+   "end": 12
+  },
+  {
+   "name": "B",
+   "start": 12,
+   "end": 20
+  },
+  {
+   "name": "L2",
+   "start": 20,
+   "end": 21
+  },
+  {
+   "name": "A'",
+   "start": 21,
+   "end": 29
+  },
+  {
+   "name": "Coda",
+   "start": 29,
+   "end": 32
+  }
+ ],
+ "patterns": [
+  "block",
+  "broken",
+  "counter",
+  "drone",
+  "waltz2"
+ ],
+ "sheet": [
+  "daily.musicxml",
+  "daily.pdf",
+  "daily.mscz"
+ ],
+ "metrics": {
+  "leap": 0.295,
+  "chrom": 0.234,
+  "npat": 5,
+  "pats": [
+   "block",
+   "broken",
+   "counter",
+   "drone",
+   "waltz2"
+  ],
+  "nqual": 7,
+  "novelty": 0.0
+ },
+ "loudness": {
+  "integrated": -15.0,
+  "true_peak": -1.6,
+  "lra": 11.3
+ }
+}
