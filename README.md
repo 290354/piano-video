@@ -134,6 +134,7 @@ GitHub 拉整仓很慢，实际是读了两个仓库的 `SKILL.md`，按其方�
 | 2026-11-23 | 雨檐 | G 小调 · 82 BPM · 32 小节 | 81.7 s | [daily-20261123](https://github.com/290354/piano-video/releases/tag/daily-20261123) |
 | 2026-11-24 | 霜阶 | 升F 小调 · 84 BPM · 32 小节 | 87.6 s | [daily-20261124](https://github.com/290354/piano-video/releases/tag/daily-20261124) |
 | 2026-11-25 | 雾港 | A 和声小调 · 92 BPM · 32 小节 | 92.5 s | [daily-20261125](https://github.com/290354/piano-video/releases/tag/daily-20261125) |
+| 2026-11-26 | 玻璃潮 | 升C 多利亚 · 108 BPM · 32 小节 | 62.9 s | [daily-20261126](https://github.com/290354/piano-video/releases/tag/daily-20261126) |
 | 2026-11-21 | 铁轨 ↻ | D 多利亚 · 112 BPM · 24 小节 | 57.1 s | [rework-tracks](https://github.com/290354/piano-video/releases/tag/rework-tracks) |
 | 2026-11-21 | 三月的信 ↻ | F 小调 · 76 BPM · 26 小节 | 66.3 s | [rework-letter](https://github.com/290354/piano-video/releases/tag/rework-letter) |
 | 2026-11-21 | 铜与霜 ↻ | C 小调 · 63 BPM · 28 小节 | 113.7 s | [rework-brass](https://github.com/290354/piano-video/releases/tag/rework-brass) |
