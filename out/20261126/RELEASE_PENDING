@@ -1,0 +1,16 @@
+视频资产上传未完成。
+
+Release daily-20261126 已创建（id 458885723，https://github.com/290354/piano-video/releases/tag/daily-20261126），
+但 daily.mp4 无法通过 GitHub Release Asset 上传接口附加。
+
+失败原因：向 https://uploads.github.com/repos/290354/piano-video/releases/<id>/assets?name=daily.mp4
+发起 POST 时持续返回 HTTP 404。请求已确认到达 GitHub（响应头含 server: github.com 与真实
+x-github-request-id），且令牌权限完整（repo scope，login 290354，admin），Release id 有效。
+沙箱环境存在 TLS 中间代理（证书 CN=zeroproxy.local / issuer CN=WorkBuddy Dedicated CA），
+且 /etc/hosts 将 uploads.github.com 与 api.github.com 都指向 140.82.113.5，导致 uploads 端点
+被路由到无资产上传路由的 API 后端。
+
+已尝试：直接 REST 上传、gh release create 一步上传、多种请求头构造、清理后重建 Release、
+最小 5 字节文件测试，均返回同样 404。视频文件本身已渲染并校验完成，位于
+out/20261126/daily.mp4（19296505 字节），未纳入 git（*.mp4 已被忽略）。
+待上传通道恢复后，可将该文件作为资产补传至上述 Release。
