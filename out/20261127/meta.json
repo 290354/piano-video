@@ -1,0 +1,176 @@
+{
+ "title": "流 沙",
+ "titleEn": "RUNNING SAND",
+ "key": "A",
+ "mode": "dorian",
+ "bpm": 122,
+ "bars": 32,
+ "duration": 59.33,
+ "sizeMB": 18.9,
+ "date": "20261127",
+ "critic": {
+  "动机辨识": {
+   "cand1.json": "1.00",
+   "cand2.json": "0.50",
+   "cand3.json": "0.50",
+   "cand4.json": "1.00"
+  },
+  "动机变形": {
+   "cand1.json": "1.00",
+   "cand2.json": "1.00",
+   "cand3.json": "1.00",
+   "cand4.json": "1.00"
+  },
+  "音程多样": {
+   "cand1.json": "1.00",
+   "cand2.json": "1.00",
+   "cand3.json": "1.00",
+   "cand4.json": "0.99"
+  },
+  "音域": {
+   "cand1.json": "1.00",
+   "cand2.json": "1.00",
+   "cand3.json": "1.00",
+   "cand4.json": "1.00"
+  },
+  "力度层次": {
+   "cand1.json": "1.00",
+   "cand2.json": "1.00",
+   "cand3.json": "1.00",
+   "cand4.json": "1.00"
+  },
+  "织体变化": {
+   "cand1.json": "1.00",
+   "cand2.json": "1.00",
+   "cand3.json": "1.00",
+   "cand4.json": "1.00"
+  },
+  "低音独立": {
+   "cand1.json": "0.50",
+   "cand2.json": "1.00",
+   "cand3.json": "0.50",
+   "cand4.json": "1.00"
+  },
+  "和声色彩": {
+   "cand1.json": "0.90",
+   "cand2.json": "0.97",
+   "cand3.json": "0.90",
+   "cand4.json": "0.90"
+  },
+  "离调密度": {
+   "cand1.json": "1.00",
+   "cand2.json": "1.00",
+   "cand3.json": "1.00",
+   "cand4.json": "1.00"
+  },
+  "密度对比": {
+   "cand1.json": "1.00",
+   "cand2.json": "1.00",
+   "cand3.json": "1.00",
+   "cand4.json": "1.00"
+  },
+  "终止式": {
+   "cand1.json": "1.00",
+   "cand2.json": "1.00",
+   "cand3.json": "1.00",
+   "cand4.json": "1.00"
+  },
+  "新颖度": {
+   "cand1.json": "0.42",
+   "cand2.json": "0.07",
+   "cand3.json": "0.00",
+   "cand4.json": "1.00"
+  },
+  "总分": {
+   "cand1.json": 92.1,
+   "cand2.json": 89.4,
+   "cand3.json": 83.9,
+   "cand4.json": 98.8
+  }
+ },
+ "critic3": {
+  "bridge": 74,
+  "develop": 100,
+  "tension": 76,
+  "expr": 100
+ },
+ "critic3_total": 86.9,
+ "critic2_total": 98.8,
+ "expression": {
+  "marks_per_bar": 0.97,
+  "pedal_per_bar": 1.0,
+  "articulated_ratio": 1.0,
+  "dyn_points": 15,
+  "dyn_range": 0.68
+ },
+ "sections": [
+  {
+   "name": "Intro",
+   "start": 0,
+   "end": 2
+  },
+  {
+   "name": "A",
+   "start": 2,
+   "end": 8
+  },
+  {
+   "name": "L1",
+   "start": 8,
+   "end": 10
+  },
+  {
+   "name": "B",
+   "start": 10,
+   "end": 16
+  },
+  {
+   "name": "L2",
+   "start": 16,
+   "end": 18
+  },
+  {
+   "name": "C",
+   "start": 18,
+   "end": 24
+  },
+  {
+   "name": "L3",
+   "start": 24,
+   "end": 26
+  },
+  {
+   "name": "A'",
+   "start": 26,
+   "end": 30
+  },
+  {
+   "name": "Coda",
+   "start": 30,
+   "end": 32
+  }
+ ],
+ "patterns": [
+  "arpeggio",
+  "block",
+  "broken",
+  "counter",
+  "drone",
+  "pulse"
+ ],
+ "candidate_ranking": {
+  "cand4.json": 92.85,
+  "cand1.json": 90.0,
+  "cand2.json": 87.9,
+  "cand3.json": 87.25
+ },
+ "winner": "cand4",
+ "functional_colors": 13,
+ "chromatic_ratio": 0.28,
+ "leap_ratio": 0.383,
+ "sheet": [
+  "daily.musicxml",
+  "daily.pdf",
+  "daily.mscz"
+ ]
+}
