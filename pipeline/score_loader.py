@@ -168,7 +168,7 @@ def snap(midi, pcs, span=6):
     return midi + best
 
 
-NEW_PATTERNS = {"pulse", "ostinato", "counter", "drone", "broken", "waltz2"}
+NEW_PATTERNS = {"pulse", "ostinato", "counter", "drone", "broken", "waltz2", "none"}
 
 
 def _tone(u, ci):
@@ -280,6 +280,8 @@ def build(path, transpose=0):
 
         if pattern in NEW_PATTERNS:
             amp = vs * dyn
+            if pattern == "none":                   # left hand is written out
+                continue
             bn = _bass_midi(bar, sc, pcs)
             u = v[1:] if len(v) > 1 else v          # upper voices, without the bass
 
@@ -360,18 +362,48 @@ def build(path, transpose=0):
             else:
                 raise ValueError(f"unknown pattern {pattern}")
 
-    for item in list(sc.get("melody", [])):
+    snap_on = bool(sc.get("snap", True))
+
+    def emit_line(rows, part):
+        """One written line of notes.
+
+        A section may carry its own tonic (`key` / `mode`): the degrees of that
+        section are then counted from the new tonic, which is how a piece can
+        actually modulate instead of just borrowing a chord. Chords stay
+        absolute, so the harmony and the line agree by construction.
+        """
+        for item in list(rows or []):
+            item = list(item)
+            bar, beat, dur, deg, octv, vel = (item + [0, 0, 1, 0, 0, 0.75])[:6]
+            acc = int(item[6]) if len(item) > 6 else 0     # semitone inflection
+            art = str(item[7]) if len(item) > 7 else ""    # stacc | ten | acc | marc
+            bar, deg, octv = int(bar), int(deg), int(octv)
+            sec = _section_of(bar, sections)
+            sdyn = float(sec.get("dynamic", 1.0))
+            r2 = NOTE_PC[sec.get("key", key)]
+            sc2 = SCALES[sec.get("mode", mode)]
+            midi = 12 * (octv + 5) + r2 + sc2[deg % 7] + 12 * (deg // 7) + acc
+            # snapping rescues a rough sketch, but it also drags an exactly
+            # written note onto a chord tone; scores that spell everything out
+            # turn it off with "snap": false
+            if (snap_on and acc == 0
+                    and abs(float(beat) - round(float(beat))) < 1e-6):
+                midi = snap(midi, parse_chord(chords[bar % len(chords)]))
+            add(bar * bpb + float(beat), float(dur), midi, float(vel) * vs * sdyn, part, art)
+
+    emit_line(sc.get("melody"), "melody")
+    # a second written voice: the answer, the canon entry, the countersubject
+    emit_line(sc.get("counter"), "counter")
+
+    # fully written left hand, for passages where a fixed figure would be a lie
+    for item in list(sc.get("left") or []):
         item = list(item)
-        bar, beat, dur, deg, octv, vel = (item + [0, 0, 1, 0, 0, 0.75])[:6]
-        acc = int(item[6]) if len(item) > 6 else 0     # semitone inflection
-        art = str(item[7]) if len(item) > 7 else ""    # stacc | ten | acc | marc
-        bar, deg, octv = int(bar), int(deg), int(octv)
-        sec = _section_of(bar, sections)
-        sdyn = float(sec.get("dynamic", 1.0))
-        midi = 12 * (octv + 5) + root_pc + scale[deg % 7] + 12 * (deg // 7) + acc
-        if acc == 0 and abs(float(beat) - round(float(beat))) < 1e-6:
-            midi = snap(midi, parse_chord(chords[bar % len(chords)]))
-        add(bar * bpb + float(beat), float(dur), midi, float(vel) * vs * sdyn, "melody", art)
+        bar, beat, dur, midi, vel = (item + [0, 0, 1, 0, 0])[:5]
+        art = str(item[5]) if len(item) > 5 else ""
+        bar = int(bar)
+        sdyn = float(_section_of(bar, sections).get("dynamic", 1.0))
+        add(bar * bpb + float(beat), float(dur), int(midi),
+            float(vel) * vs * sdyn, "left", art)
 
     # optional octave doubling; off by default so the written register is what
     # you hear (and what the keyboard shows)

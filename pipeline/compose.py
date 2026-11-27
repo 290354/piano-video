@@ -302,8 +302,8 @@ def render_note(ev):
     y[:a] *= np.linspace(0, 1, a, dtype=np.float32)[:, None]
 
     # a little air between the hands
-    pan = {"melody": 0.10, "harmony": -0.08, "bass": 0.0,
-           "sparkle": 0.26}.get(ev["part"], 0.0)
+    pan = {"melody": 0.10, "harmony": -0.08, "bass": 0.0, "sparkle": 0.26,
+           "counter": 0.16, "left": -0.14}.get(ev["part"], 0.0)
     if pan:
         y[:, 0] *= (1.0 - pan)
         y[:, 1] *= (1.0 + pan)
@@ -334,16 +334,21 @@ def main():
 
     # how much silence to keep after the last note; external scores can ask for
     # a longer ring-out (room for the end card) via {"tail": seconds}
-    tail = 0.6
+    tail, ending = 0.6, "fade"
     if _ARGS.score:
         try:
             with open(_ARGS.score) as _f:
-                tail = float(json.load(_f).get("tail", 0.6))
+                _sc = json.load(_f)
+            tail = float(_sc.get("tail", 0.6))
+            ending = str(_sc.get("ending", "fade"))
         except Exception:
-            tail = 0.6
+            pass
     tail = max(0.4, min(tail, 12.0))
 
-    total = int((bt(end_beat) + max(4.0, tail + 2.5)) * SR)
+    # a piece that stops on a chord should not have four seconds of room tone
+    # glued to the end of it; "cut" ends the file just after the last attack
+    room = tail + 0.8 if ending == "cut" else max(4.0, tail + 2.5)
+    total = int((bt(end_beat) + room) * SR)
     mix = np.zeros((total, 2), dtype=np.float32)
     print(f"{len(events)} notes, {bt(end_beat):.1f}s + tail")
 

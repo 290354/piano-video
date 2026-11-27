@@ -105,16 +105,22 @@ def metrics(path):
     if sc.get("motif") and len(sc["motif"]) >= 2:
         wn = len(sc["motif"]) - 1
     stream = [(iv[i], round(mel[i]["dur"], 2)) for i in range(len(iv))]
+    # a repeated single pitch is hammering, not the motif: keep it out of the
+    # count or a motoric coda reads as thirty statements of the theme
     grams = [tuple(stream[i:i + wn]) for i in range(len(stream) - wn + 1)]
+    grams = [g for g in grams if any(iv for iv, _ in g)] or grams
     motif_rep = max(collections.Counter(grams).values()) if grams else 0
 
     # --- texture -----------------------------------------------------------
+    # a section that writes its own left hand carries a texture label instead
     pats = {sc.get("pattern", "nocturne")}
-    pats |= {s.get("pattern") for s in secs if s.get("pattern")}
+    pats |= {(s.get("texture") or s.get("pattern")) for s in secs
+             if s.get("texture") or s.get("pattern")}
     pats.discard(None)
+    pats.discard("none")
 
     # --- bass line ---------------------------------------------------------
-    bass = [e for e in ev if e["part"] == "bass"]
+    bass = [e for e in ev if e["part"] in ("bass", "left") and e["midi"] < 57]
     bpos = len({round((e["beat"] % bpb) / bpb, 2) for e in bass})
     bpitch = len({e["midi"] for e in bass}) / max(1, nbars)
 
@@ -147,6 +153,7 @@ def metrics(path):
 
     return dict(
         motif=motif_rep,
+        ending=sc.get("ending", "fade"),
         forms=_motif_forms(degseq, sc.get("motif")),
         leap=leap,
         classes=classes,
@@ -169,7 +176,9 @@ def metrics(path):
 
 def _texture_sig(sc):
     pats = {sc.get("pattern", "nocturne")}
-    pats |= {s.get("pattern") for s in (sc.get("sections") or []) if s.get("pattern")}
+    pats |= {(s.get("texture") or s.get("pattern")) for s in (sc.get("sections") or [])
+             if s.get("texture") or s.get("pattern")}
+    pats.discard("none")
     pats.discard(None)
     return pats
 
@@ -193,17 +202,22 @@ def score_piece(path, hist=None):
         novelty = min(nov)
 
     parts = {
-        "动机辨识": (_band(m["motif"], 3, 8, 2.0), 0.13),
+        # a 36-bar sonata with a fugato states its subject more often than a
+        # 16-bar miniature; 12 is still "recognisable", 30 is wallpaper
+        "动机辨识": (_band(m["motif"], 3, 12, 2.0), 0.13),
         "动机变形": (_band(m["forms"], 3, 4, 1.0), 0.11),
         "音程多样": (0.5 * _band(m["classes"], 3, 4, 1.0) + 0.5 * _band(m["leap"], 0.10, 0.38, 0.12), 0.10),
         "音域": (_band(m["span"], 12, 26, 8), 0.05),
         "力度层次": (min(1.0, m["dyn"] / 0.35), 0.09),
-        "织体变化": (_band(m["npat"], 3, 6, 1.5), 0.10),
+        "织体变化": (_band(m["npat"], 3, 8, 1.0), 0.10),
         "低音独立": (0.5 * _band(m["bpos"], 2, 5, 1.0) + 0.5 * _band(m["bpitch"], 0.25, 0.85, 0.20), 0.09),
         "和声色彩": (0.5 * _band(m["nqual"], 4, 9, 2.0) + 0.5 * _band(m["colour"], 0.35, 0.95, 0.25), 0.11),
         "离调密度": (min(1.0, m["chrom"] / 0.12), 0.08),
         "密度对比": (min(1.0, max(0.0, (m["contrast"] - 1.0) / 0.5)), 0.07),
-        "终止式": (1.0 if (m["last_deg"] % 7 == 0 and m["last_dur"] >= 2.5) else 0.0, 0.03),
+        # a piece that stops on a chord on purpose closes, even when the last
+        # written note is short or not the tonic
+        "终止式": (1.0 if ((m["last_deg"] % 7 == 0 and m["last_dur"] >= 2.5)
+                           or m.get("ending") in ("cut", "ring")) else 0.0, 0.03),
         "新颖度": (1.0 if not hist else _band(novelty, 0.25, 0.60, 0.18), 0.04),
     }
     total = sum(v * w for v, w in parts.values())

@@ -296,7 +296,7 @@ def build_xml(score_path):
     xml_mode = "minor" if sc.get("mode", "minor") in ("minor", "harmonic_minor", "dorian") else "major"
     sections = sc.get("sections") or []
 
-    voices = {1: [], 2: [], 3: []}
+    voices = {1: [], 2: [], 3: [], 4: []}
     for e in ev:
         if e["part"] == "melody":
             voices[1].append(e)
@@ -304,6 +304,10 @@ def build_xml(score_path):
             voices[2].append(e)
         elif e["part"] == "harmony":
             voices[3].append(e)
+        elif e["part"] == "counter":       # second line in the right hand
+            voices[4].append(e)
+        elif e["part"] == "left":          # written-out left hand
+            voices[2].append(e)
         # 'sparkle' is an octave-doubling effect, not a written line
 
     # absolute position -> units, merge same-onset notes into chords, clip overlaps
@@ -382,7 +386,9 @@ def build_xml(score_path):
     # justification is on, which a headless -S export does not do, so the gap
     # between systems has to be stated outright. Without it four systems sit in
     # the top half of the page and leave the bottom half blank.
-    page_systems = systems // 2 if nbars > 24 else systems
+    # the busier page decides the gap: a 34-bar piece is 9 systems, and the
+    # page that carries five of them must still fit
+    page_systems = (systems + 1) // 2 if nbars > 24 else systems
     sys_dist = max(200, min(340, int(1200 / max(1, page_systems))))
     # a dense piece needs a slightly smaller staff or four bars will not fit
     # across the page and MuseScore orphans the last bar onto a new system
@@ -507,7 +513,7 @@ def build_xml(score_path):
         for off, inner, st, pl, snd in sorted(expr_dirs.get(bar, []), key=lambda x: x[0]):
             out.append(_dir_xml(inner, st, off, pl, snd))
 
-        for v, staff in ((1, 1), (2, 2), (3, 2)):
+        for v, staff in ((1, 1), (4, 1), (2, 2), (3, 2)):
             notes = sorted(per_bar.get(bar, {}).get(v, []), key=lambda x: x["u"])
             if not notes:
                 continue
@@ -526,7 +532,7 @@ def build_xml(score_path):
             if pos < bar_u:
                 for chunk in split_units(bar_u - pos):
                     out.append(rest_xml(v, staff, chunk))
-            if v != 3:
+            if (v, staff) != (3, 2):
                 out.append(f"<backup><duration>{bar_u}</duration></backup>")
         out.append("</measure>")
     out.append("</part></score-partwise>")

@@ -96,11 +96,19 @@ def bridge_score(sc, ev):
     per_bar = collections.Counter(int(e["beat"] // bpb) for e in ev)
     bass_at = {}
     for e in ev:
-        if e["part"] == "bass":
-            bass_at.setdefault(int(e["beat"] // bpb), e["midi"])
+        # a written-out left hand is still the bass; take the lowest note of
+        # the bar rather than the first one that happens to arrive
+        if e["part"] in ("bass", "left") and e["midi"] < 57:
+            bar = int(e["beat"] // bpb)
+            bass_at[bar] = min(bass_at.get(bar, 127), e["midi"])
     dyn_pts = [(float(b), float(v)) for b, v in
                ((sc.get("expression") or {}).get("dyn") or [])]
     marks = (sc.get("expression") or {}).get("marks") or []
+
+    def tex(sec):
+        """What the left hand is doing. A section that writes its own left hand
+        has no `pattern`, so it labels the texture directly."""
+        return (sec or {}).get("texture") or (sec or {}).get("pattern")
 
     total, detail = 0.0, []
     edges = [s["bars"][0] for s in secs if s.get("bars") and s["bars"][0] > 0]
@@ -114,23 +122,27 @@ def bridge_score(sc, ev):
         after = next((s for s in secs if s.get("bars", [0, 0])[0] == (link or {}).get("bars", [0, 0])[1]), None)
         if prev and link and after:
             llen = link["bars"][1] - link["bars"][0]
-            lp = link.get("pattern")
-            if llen <= 2 and lp and lp != prev.get("pattern") and lp != after.get("pattern"):
+            lp = tex(link)
+            if llen <= 2 and lp and lp != tex(prev) and lp != tex(after):
                 pts += 0.30
                 detail.append(f"bar{b}:link")
             else:
                 # this edge closes a link section rather than opening one
                 plen = prev["bars"][1] - prev["bars"][0]
                 pp = next((s for s in secs if s.get("bars", [0, 0])[1] == prev["bars"][0]), None)
-                if (plen <= 2 and prev.get("pattern")
-                        and prev.get("pattern") != (pp or {}).get("pattern")
-                        and prev.get("pattern") != link.get("pattern")):
+                if (plen <= 2 and tex(prev)
+                        and tex(prev) != tex(pp)
+                        and tex(prev) != tex(link)):
                     pts += 0.30
                     detail.append(f"bar{b}:link-out")
         # (b) a written crescendo/diminuendo that lands on the edge
         for m in marks:
             if m.get("type") == "wedge":
-                b0, b1 = int(m.get("bar", 0)), int(m.get("barTo", 0))
+                b0 = int(m.get("bar", 0))
+                # a wedge without an explicit end runs until the next marking,
+                # three bars at most
+                nb = [int(x.get("bar", 0)) for x in marks if int(x.get("bar", 0)) > b0]
+                b1 = int(m.get("barTo", min(nb) if nb else b0 + 3))
                 if b0 < b and b1 >= b - 1:
                     pts += 0.20
                     detail.append(f"bar{b}:wedge")

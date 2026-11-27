@@ -70,7 +70,7 @@ def compose(build, bpm, transpose, score=None):
     return meta
 
 
-def master(raw, out, dur, gain_db=0.0):
+def master(raw, out, dur, gain_db=0.0, fade=3.6):
     """EQ + fade + fixed gain.
 
     loudnorm used to compress LRA to 9 LU, which flattened exactly the
@@ -80,8 +80,9 @@ def master(raw, out, dur, gain_db=0.0):
     af = ("highpass=f=32,"
           "equalizer=f=260:t=q:w=1:g=-1.6,"
           "equalizer=f=3200:t=q:w=0.8:g=2.2,"
-          f"afade=t=out:st={max(0.0, dur - 3.8):.2f}:d=3.6,"
-          f"volume={gain_db:.2f}dB,alimiter=limit=0.87:level=false")
+          + (f"afade=t=out:st={max(0.0, dur - fade - 0.2):.2f}:d={fade:.2f},"
+             if fade > 0.02 else "")
+          + f"volume={gain_db:.2f}dB,alimiter=limit=0.87:level=false")
     ff = ffmpeg_exe()
     subprocess.run([ff, "-y", "-hide_banner", "-loglevel", "error", "-i", raw,
                     "-t", f"{dur:.2f}", "-af", af, "-ar", "48000", "-ac", "2", out], check=True)
@@ -133,7 +134,10 @@ def main():
 
     raw = os.path.join(build, "piano_raw.wav")
     audio = os.path.join(build, "piano_master.wav")
-    master(raw, audio, dur, a.gain)
+    # how the piece is allowed to end: a fade is a decision, not a default
+    ending = str(sc.get("ending", "fade"))
+    fade = 0.10 if ending == "cut" else (0.0 if ending == "ring" else 3.6)
+    master(raw, audio, dur, a.gain, fade)
 
     transpose = a.transpose
     NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]

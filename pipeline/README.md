@@ -25,6 +25,7 @@ python3 make.py --bpm 64 --transpose -2 --scale 2 --out ../out/nocturne_4k.mp4
 | `score_loader.py` | 外部 `score.json` → 音符事件；和弦按音程表解析，含和弦音吸附、十种织体、`bassLine`、旋律变化音 |
 | `critic2.py` | 评审器 v2：动机变形、织体、低音、和声色彩、离调密度 |
 | `critic3.py` | 评审器 v3：段落过渡、再现变形、功能色彩与张力曲线、表情层密度 |
+| `critic4.py` | 评审器 v4：曲式是否模板化（结尾/峰值位置/再现）、是否有真的对位、调性距离 |
 | `scores/` | 乐谱格式说明与示例（`waltz.json`） |
 | `scene.js` | 画面，`drawFrame(t)` 是时间的纯函数 |
 | `render.py` | 无头 Chromium 逐帧截屏 → image2pipe → x264 |
