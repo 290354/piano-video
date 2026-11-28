@@ -1,0 +1,175 @@
+{
+  "title": "磁 极",
+  "titleEn": "Magnetic North",
+  "key": "E",
+  "mode": "minor",
+  "bpm": 112,
+  "bars": 34,
+  "duration": 71.701,
+  "sizeMB": 22.73,
+  "date": "20261128",
+  "critic": {
+    "critic2": {
+      "total": 98.9,
+      "动机辨识": 1.0,
+      "动机变形": 1.0,
+      "音程多样": 1.0,
+      "音域": 1.0,
+      "力度层次": 1.0,
+      "织体变化": 1.0,
+      "低音独立": 1.0,
+      "和声色彩": 0.9,
+      "离调密度": 1.0,
+      "密度对比": 1.0,
+      "终止式": 1.0,
+      "新颖度": 1.0,
+      "per_candidate": {
+        "cand1": 98.9,
+        "cand2": 98.9,
+        "cand3": 98.9,
+        "cand4": 97.7
+      },
+      "detail": "动机 7次/3形 大跳30% 织体7种 色彩6种 离调57% 力度差0.91 距离0.46"
+    },
+    "critic3": {
+      "total": 95.8,
+      "bridge": 95,
+      "develop": 100,
+      "tension": 100,
+      "expr": 87,
+      "detail": "return similarity 0.69 | tension events 20 | marks 17/34bar, pedal 34, arts 100%"
+    },
+    "critic4": {
+      "total": 86.3,
+      "form": 88,
+      "counter": 86,
+      "distance": 85,
+      "detail": "cut ending; peak bar34(97%); 22 imitations; contrary 11/27; A-prime in Bb(6); 13 distant roots; 10 out-of-scale; ends Em9"
+    },
+    "ranking": {
+      "cand1": 93.67,
+      "cand4": 91.73,
+      "cand3": 91.4,
+      "cand2": 90.8
+    }
+  },
+  "expression": {
+    "marks_per_bar": 0.5,
+    "pedal_per_bar": 1.0,
+    "articulated_ratio": 1.0,
+    "dyn_points": 15,
+    "dyn_range": 0.66,
+    "motifForms": {
+      "P": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        20,
+        21,
+        30,
+        31,
+        32
+      ],
+      "I": [
+        6,
+        24
+      ],
+      "R": [
+        7,
+        23
+      ],
+      "RI": [
+        8,
+        29
+      ],
+      "aug": [
+        15
+      ]
+    }
+  },
+  "sections": [
+    {
+      "name": "Seed",
+      "start": 0,
+      "end": 8,
+      "texture": "cell",
+      "key": ""
+    },
+    {
+      "name": "L1",
+      "start": 8,
+      "end": 10,
+      "texture": "sift",
+      "key": ""
+    },
+    {
+      "name": "Climb",
+      "start": 10,
+      "end": 18,
+      "texture": "spiral",
+      "key": ""
+    },
+    {
+      "name": "L2",
+      "start": 18,
+      "end": 20,
+      "texture": "fold",
+      "key": ""
+    },
+    {
+      "name": "A'",
+      "start": 20,
+      "end": 28,
+      "texture": "canon",
+      "key": "Bb"
+    },
+    {
+      "name": "L3",
+      "start": 28,
+      "end": 30,
+      "texture": "seam",
+      "key": ""
+    },
+    {
+      "name": "Coda",
+      "start": 30,
+      "end": 34,
+      "texture": "forge",
+      "key": ""
+    }
+  ],
+  "patterns": [
+    "none"
+  ],
+  "textures": [
+    "canon",
+    "cell",
+    "fold",
+    "forge",
+    "seam",
+    "sift",
+    "spiral"
+  ],
+  "ending": "cut",
+  "sheet": [
+    "daily.musicxml",
+    "daily.pdf",
+    "daily.mscz"
+  ],
+  "loudness": {
+    "integrated_lufs": -14.1,
+    "true_peak_dbfs": -2.5,
+    "lra": 14.6
+  },
+  "validation": {
+    "ffprobe": "1920x1080 30fps h264+aac 71.701s",
+    "rms_spread_db": 13.07,
+    "peak_section": "Coda",
+    "silencedetect": "no >=1.2s mid-piece silence",
+    "sheet_pages": 2,
+    "frames": "mid notes on keys; end card text unobstructed"
+  }
+}
